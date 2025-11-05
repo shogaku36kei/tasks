@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>タスク管理アプリ</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            flex: 1;
+            margin: 10px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 0.8rem 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .header-layout {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .header-left h1 {
+            font-size: 1.4rem;
+            margin-bottom: 0.2rem;
+        }
+
+        .header-left p {
+            font-size: 0.8rem;
+            opacity: 0.9;
+        }
+
+        .header-center {
+            display: flex;
+            justify-content: center;
+        }
+
+        .file-info-inline {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 20px;
+            padding: 0.4rem 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            font-size: 0.8rem;
+            white-space: nowrap;
+        }
+
+        .file-label {
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 500;
+        }
+
+        .file-name {
+            color: white;
+            font-family: monospace;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 0.15rem 0.5rem;
+            border-radius: 10px;
+            max-width: 200px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .file-controls {
+            display: flex;
+            gap: 0.3rem;
+        }
+
+        .btn-file-control {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 0.2rem 0.35rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            transition: background-color 0.2s;
+        }
+
+        .btn-file-control:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .header-right {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.4rem;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .status-bar {
+            background: #d4edda;
+            color: #155724;
+            padding: 0.4rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            display: none;
+            flex-shrink: 0;
+        }
+
+        .status-bar.show {
+            display: block;
+        }
+
+        .status-bar.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-bar.info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .top-section {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 1rem;
+            flex-shrink: 0;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.6rem;
+        }
+
+        .stat-card {
+            background: #f8f9fa;
+            padding: 0.8rem;
+            border-radius: 6px;
+            text-align: center;
+            border: 1px solid #dee2e6;
+        }
+
+        .stat-number {
+            font-size: 1.6rem;
+            font-weight: bold;
+            color: #4facfe;
+            margin-bottom: 0.3rem;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.8rem;
+        }
+
+        .task-form {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+        }
+
+        .task-form h2 {
+            font-size: 1.2rem;
+            margin-bottom: 0.8rem;
+        }
+
+        .form-group {
+            margin-bottom: 0.6rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.3rem;
+            font-weight: 600;
+            color: #333;
+            font-size: 0.85rem;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #4facfe;
+            box-shadow: 0 0 0 2px rgba(79, 172, 254, 0.2);
+        }
+
+        textarea {
+            resize: vertical;
+            height: 50px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.6rem;
+        }
+
+        .btn {
+            background: #4facfe;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            margin-right: 0.4rem;
+        }
+
+        .btn:hover {
+            background: #0f9afe;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .btn-success {
+            background: #28a745;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        .btn-warning:hover {
+            background: #e0a800;
+        }
+
+        .btn-info {
+            background: #17a2b8;
+        }
+
+        .btn-info:hover {
+            background: #138496;
+        }
+
+        .btn-small {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.8rem;
+        }
+
+        .export-import {
+            margin-top: 0.6rem;
+            padding-top: 0.6rem;
+            border-top: 1px solid #dee2e6;
+        }
+
+        .tasks-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            min-height: 0;
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            margin-bottom: 0.6rem;
+            color: #333;
+            flex-shrink: 0;
+        }
+
+        .task-filters {
+            display: flex;
+            gap: 0.4rem;
+            margin-bottom: 0.6rem;
+            flex-wrap: wrap;
+            flex-shrink: 0;
+        }
+
+        .filter-btn {
+            background: #e9ecef;
+            color: #495057;
+            border: 1px solid #ced4da;
+            padding: 0.4rem 0.8rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+
+        .filter-btn.active {
+            background: #4facfe;
+            color: white;
+            border-color: #4facfe;
+        }
+
+        .task-grid-container {
+            flex: 1;
+            overflow-y: auto;
+            min-height: 0;
+        }
+
+        .task-grid-container::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .task-grid-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        .task-grid-container::-webkit-scrollbar-thumb {
+            background: #4facfe;
+            border-radius: 4px;
+        }
+
+        .task-grid-container::-webkit-scrollbar-thumb:hover {
+            background: #0f9afe;
+        }
+
+        .task-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 0.8rem;
+            padding-right: 0.5rem;
+        }
+
+        .task-card {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            padding: 1rem;
+            border-left: 4px solid #4facfe;
+        }
+
+        .task-card.completed {
+            opacity: 0.7;
+            border-left-color: #28a745;
+        }
+
+        .task-card.high-priority {
+            border-left-color: #dc3545;
+        }
+
+        .task-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 0.4rem;
+            color: #333;
+        }
+
+        .task-priority {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            margin-bottom: 0.4rem;
+        }
+
+        .priority-high {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .priority-medium {
+            background: #fff3e0;
+            color: #ef6c00;
+        }
+
+        .priority-low {
+            background: #e8f5e8;
+            color: #2e7d32;
+        }
+
+        .task-description {
+            color: #666;
+            margin-bottom: 0.8rem;
+            line-height: 1.3;
+            font-size: 0.85rem;
+        }
+
+        .task-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8rem;
+            color: #888;
+            margin-bottom: 0.8rem;
+        }
+
+        .task-actions {
+            display: flex;
+            gap: 0.4rem;
+            flex-wrap: wrap;
+        }
+
+        .task-actions .btn {
+            padding: 0.35rem 0.7rem;
+            font-size: 0.75rem;
+            margin: 0;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: #666;
+        }
+
+        .empty-state h3 {
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .empty-state p {
+            font-size: 0.9rem;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .modal h3 {
+            margin-bottom: 1rem;
+            color: #333;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: flex-end;
+            margin-top: 1.5rem;
+        }
+
+        @media (max-width: 1024px) {
+            .top-section {
+                grid-template-columns: 1fr;
+            }
+
+            .stats {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header-layout {
+                grid-template-columns: 1fr;
+                gap: 0.8rem;
+                text-align: center;
+            }
+
+            .header-left h1,
+            .header-left p {
+                text-align: center;
+            }
+
+            .header-right {
+                justify-content: center;
+            }
+
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .task-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-layout">
+                <div class="header-left">
+                    <h1>📋 タスク管理アプリ</h1>
+                    <p>効率的な業務管理システム</p>
+                </div>
+                <div class="header-center">
+                    <div class="file-info-inline">
+                        <span class="file-label">📁 データファイル:</span>
+                        <span class="file-name" id="headerFilePath">未設定</span>
+                        <div class="file-controls">
+                            <button class="btn-file-control" id="headerSelectFile" title="ファイルを選択">📂</button>
+                            <button class="btn-file-control" id="headerSaveFile" title="保存">💾</button>
+                            <button class="btn-file-control" id="headerClearFile" title="設定をクリア">🗑️</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <button class="btn btn-danger btn-small" id="exitBtn">✖️ 終了</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="status-bar" id="statusBar"></div>
+
+            <div class="top-section">
+                <div class="stats">
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalTasks">0</div>
+                        <div class="stat-label">総タスク数</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="completedTasks">0</div>
+                        <div class="stat-label">完了タスク</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="pendingTasks">0</div>
+                        <div class="stat-label">未完了タスク</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="highPriorityTasks">0</div>
+                        <div class="stat-label">高優先度タスク</div>
+                    </div>
+                </div>
+
+                <div class="task-form">
+                    <h2 id="formTitle">新しいタスクを追加</h2>
+                    <form id="taskForm">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="taskTitle">タイトル *</label>
+                                <input type="text" id="taskTitle" required placeholder="タスクのタイトルを入力">
+                            </div>
+                            <div class="form-group">
+                                <label for="taskCategory">カテゴリ</label>
+                                <input type="text" id="taskCategory" placeholder="例: 営業、開発、会議">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="taskDescription">説明</label>
+                            <textarea id="taskDescription" placeholder="タスクの詳細を入力してください"></textarea>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="taskPriority">優先度</label>
+                                <select id="taskPriority">
+                                    <option value="low">低</option>
+                                    <option value="medium" selected>中</option>
+                                    <option value="high">高</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="taskDueDate">期限</label>
+                                <input type="date" id="taskDueDate">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn">タスクを追加</button>
+                        <button type="button" class="btn btn-danger" id="cancelBtn" style="display: none;">キャンセル</button>
+                        <div class="export-import">
+                            <button type="button" class="btn btn-success btn-small" id="exportBtn">エクスポート</button>
+                            <button type="button" class="btn btn-warning btn-small" id="importBtn">インポート</button>
+                            <input type="file" id="importFile" accept=".json" style="display: none;">
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="tasks-section">
+                <div class="section-title">📝 タスク一覧</div>
+                <div class="task-filters">
+                    <button class="filter-btn active" data-filter="all">すべて</button>
+                    <button class="filter-btn" data-filter="pending">未完了</button>
+                    <button class="filter-btn" data-filter="completed">完了済み</button>
+                    <button class="filter-btn" data-filter="high">高優先度</button>
+                    <button class="filter-btn" data-filter="today">今日期限</button>
+                </div>
+                <div class="task-grid-container">
+                    <div class="task-grid" id="taskGrid">
+                        <div class="empty-state">
+                            <div style="font-size: 2.5rem; margin-bottom: 0.8rem;">📝</div>
+                            <h3>まだタスクがありません</h3>
+                            <p>上のフォームから新しいタスクを追加してください</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="exitModal">
+        <div class="modal">
+            <h3>終了確認</h3>
+            <p>データを保存してアプリを終了しますか?</p>
+            <div class="modal-buttons">
+                <button class="btn" id="cancelExit">キャンセル</button>
+                <button class="btn btn-danger" id="confirmExit">保存して終了</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let tasks = [];
+        let editingTaskId = null;
+        let currentFilter = 'all';
+        let fileHandle = null;
+        let hasUnsavedChanges = false;
+
+        // File System Access API のサポート確認
+        const supportsFileSystemAccess = 'showSaveFilePicker' in window;
+
+        // 初期化
+        document.addEventListener('DOMContentLoaded', () => {
+            loadTasks();
+            renderTasks();
+            updateStats();
+            setupEventListeners();
+            
+            if (supportsFileSystemAccess) {
+                showStatus('ファイルシステムAPIをサポートしています', 'info');
+            } else {
+                showStatus('従来のダウンロード方式を使用します', 'info');
+            }
+        });
+
+        function setupEventListeners() {
+            document.getElementById('taskForm').addEventListener('submit', handleTaskSubmit);
+            document.getElementById('cancelBtn').addEventListener('click', cancelEdit);
+            document.getElementById('exportBtn').addEventListener('click', exportTasks);
+            document.getElementById('importBtn').addEventListener('click', () => document.getElementById('importFile').click());
+            document.getElementById('importFile').addEventListener('change', importTasks);
+            document.getElementById('exitBtn').addEventListener('click', () => document.getElementById('exitModal').classList.add('show'));
+            document.getElementById('cancelExit').addEventListener('click', () => document.getElementById('exitModal').classList.remove('show'));
+            document.getElementById('confirmExit').addEventListener('click', handleExit);
+            document.getElementById('headerSelectFile').addEventListener('click', selectFileLocation);
+            document.getElementById('headerSaveFile').addEventListener('click', saveToFile);
+            document.getElementById('headerClearFile').addEventListener('click', clearFileLocation);
+
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                    e.target.classList.add('active');
+                    currentFilter = e.target.dataset.filter;
+                    renderTasks();
+                });
+            });
+        }
+
+        async function selectFileLocation() {
+            if (!supportsFileSystemAccess) {
+                showStatus('お使いのブラウザはファイル選択をサポートしていません', 'error');
+                return;
+            }
+
+            try {
+                const options = {
+                    types: [{
+                        description: 'JSON Files',
+                        accept: {'application/json': ['.json']},
+                    }],
+                    suggestedName: 'tasks.json'
+                };
+                
+                fileHandle = await window.showSaveFilePicker(options);
+                document.getElementById('headerFilePath').textContent = fileHandle.name;
+                showStatus(`ファイル「${fileHandle.name}」を設定しました`, 'success');
+                
+                // 設定後、即座に保存
+                await saveToFile();
+            } catch (err) {
+                if (err.name !== 'AbortError') {
+                    showStatus('ファイルの選択に失敗しました', 'error');
+                }
+            }
+        }
+
+        async function saveToFile() {
+            if (!fileHandle) {
+                if (supportsFileSystemAccess) {
+                    showStatus('先にファイルを選択してください', 'error');
+                    await selectFileLocation();
+                    return;
+                } else {
+                    // File System Access API非対応の場合は通常のダウンロード
+                    exportTasks();
+                    return;
+                }
+            }
+
+            try {
+                const writable = await fileHandle.createWritable();
+                await writable.write(JSON.stringify(tasks, null, 2));
+                await writable.close();
+                
+                hasUnsavedChanges = false;
+                showStatus('データを保存しました', 'success');
+            } catch (err) {
+                showStatus('保存に失敗しました: ' + err.message, 'error');
+            }
+        }
+
+        function clearFileLocation() {
+            fileHandle = null;
+            document.getElementById('headerFilePath').textContent = '未設定';
+            showStatus('ファイル設定をクリアしました', 'info');
+        }
+
+        function handleTaskSubmit(e) {
+            e.preventDefault();
+            
+            const task = {
+                id: editingTaskId || Date.now(),
+                title: document.getElementById('taskTitle').value,
+                description: document.getElementById('taskDescription').value,
+                category: document.getElementById('taskCategory').value,
+                priority: document.getElementById('taskPriority').value,
+                dueDate: document.getElementById('taskDueDate').value,
+                completed: false,
+                createdAt: editingTaskId ? tasks.find(t => t.id === editingTaskId).createdAt : new Date().toISOString()
+            };
+
+            if (editingTaskId) {
+                const index = tasks.findIndex(t => t.id === editingTaskId);
+                tasks[index] = { ...tasks[index], ...task };
+                showStatus('タスクを更新しました', 'success');
+            } else {
+                tasks.unshift(task);
+                showStatus('タスクを追加しました', 'success');
+            }
+
+            saveTasks();
+            renderTasks();
+            updateStats();
+            resetForm();
+        }
+
+        function editTask(id) {
+            const task = tasks.find(t => t.id === id);
+            if (!task) return;
+
+            editingTaskId = id;
+            document.getElementById('taskTitle').value = task.title;
+            document.getElementById('taskDescription').value = task.description;
+            document.getElementById('taskCategory').value = task.category;
+            document.getElementById('taskPriority').value = task.priority;
+            document.getElementById('taskDueDate').value = task.dueDate;
+            
+            document.getElementById('formTitle').textContent = 'タスクを編集';
+            document.getElementById('cancelBtn').style.display = 'inline-block';
+            document.querySelector('button[type="submit"]').textContent = 'タスクを更新';
+        }
+
+        function cancelEdit() {
+            resetForm();
+        }
+
+        function resetForm() {
+            editingTaskId = null;
+            document.getElementById('taskForm').reset();
+            document.getElementById('formTitle').textContent = '新しいタスクを追加';
+            document.getElementById('cancelBtn').style.display = 'none';
+            document.querySelector('button[type="submit"]').textContent = 'タスクを追加';
+        }
+
+        function deleteTask(id) {
+            if (!confirm('このタスクを削除しますか?')) return;
+            
+            tasks = tasks.filter(t => t.id !== id);
+            saveTasks();
+            renderTasks();
+            updateStats();
+            showStatus('タスクを削除しました', 'success');
+        }
+
+        function toggleComplete(id) {
+            const task = tasks.find(t => t.id === id);
+            if (task) {
+                task.completed = !task.completed;
+                saveTasks();
+                renderTasks();
+                updateStats();
+                showStatus(task.completed ? 'タスクを完了にしました' : 'タスクを未完了に戻しました', 'success');
+            }
+        }
+
+        function renderTasks() {
+            const grid = document.getElementById('taskGrid');
+            const filteredTasks = getFilteredTasks();
+
+            if (filteredTasks.length === 0) {
+                grid.innerHTML = `
+                    <div class="empty-state">
+                        <div style="font-size: 2.5rem; margin-bottom: 0.8rem;">📝</div>
+                        <h3>タスクがありません</h3>
+                        <p>${currentFilter === 'all' ? '上のフォームから新しいタスクを追加してください' : 'このフィルターに該当するタスクがありません'}</p>
+                    </div>
+                `;
+                return;
+            }
+
+            grid.innerHTML = filteredTasks.map(task => `
+                <div class="task-card ${task.completed ? 'completed' : ''} ${task.priority === 'high' ? 'high-priority' : ''}">
+                    <div class="task-title">${task.title}</div>
+                    <span class="task-priority priority-${task.priority}">
+                        ${task.priority === 'high' ? '高' : task.priority === 'medium' ? '中' : '低'}優先度
+                    </span>
+                    ${task.category ? `<div style="color: #888; font-size: 0.85rem; margin-top: 0.3rem;">📁 ${task.category}</div>` : ''}
+                    ${task.description ? `<div class="task-description">${task.description}</div>` : ''}
+                    <div class="task-meta">
+                        <span>${task.dueDate ? '📅 ' + formatDate(task.dueDate) : '期限なし'}</span>
+                        <span>${task.completed ? '✅ 完了' : '⏳ 未完了'}</span>
+                    </div>
+                    <div class="task-actions">
+                        <button class="btn btn-success" onclick="toggleComplete(${task.id})">
+                            ${task.completed ? '未完了に戻す' : '完了'}
+                        </button>
+                        <button class="btn btn-info" onclick="editTask(${task.id})">編集</button>
+                        <button class="btn btn-danger" onclick="deleteTask(${task.id})">削除</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function getFilteredTasks() {
+            const today = new Date().toISOString().split('T')[0];
+            
+            switch(currentFilter) {
+                case 'pending':
+                    return tasks.filter(t => !t.completed);
+                case 'completed':
+                    return tasks.filter(t => t.completed);
+                case 'high':
+                    return tasks.filter(t => t.priority === 'high');
+                case 'today':
+                    return tasks.filter(t => t.dueDate === today);
+                default:
+                    return tasks;
+            }
+        }
+
+        function updateStats() {
+            document.getElementById('totalTasks').textContent = tasks.length;
+            document.getElementById('completedTasks').textContent = tasks.filter(t => t.completed).length;
+            document.getElementById('pendingTasks').textContent = tasks.filter(t => !t.completed).length;
+            document.getElementById('highPriorityTasks').textContent = tasks.filter(t => t.priority === 'high').length;
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return '';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric' });
+        }
+
+        function showStatus(message, type = 'success') {
+            const statusBar = document.getElementById('statusBar');
+            statusBar.textContent = message;
+            statusBar.className = 'status-bar show ' + type;
+            
+            setTimeout(() => {
+                statusBar.classList.remove('show');
+            }, 3000);
+        }
+
+        function saveTasks() {
+            try {
+                localStorage.setItem('tasks', JSON.stringify(tasks));
+                hasUnsavedChanges = true;
+            } catch (err) {
+                showStatus('データの保存に失敗しました', 'error');
+            }
+        }
+
+        function loadTasks() {
+            try {
+                const saved = localStorage.getItem('tasks');
+                if (saved) {
+                    tasks = JSON.parse(saved);
+                }
+            } catch (err) {
+                showStatus('データの読み込みに失敗しました', 'error');
+            }
+        }
+
+        function exportTasks() {
+            const dataStr = JSON.stringify(tasks, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'tasks_' + new Date().toISOString().split('T')[0] + '.json';
+            link.click();
+            URL.revokeObjectURL(url);
+            showStatus('データをエクスポートしました', 'success');
+        }
+
+        function importTasks(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                try {
+                    const imported = JSON.parse(event.target.result);
+                    if (Array.isArray(imported)) {
+                        if (confirm('既存のタスクを上書きしますか？キャンセルを押すと既存データに追加されます。')) {
+                            tasks = imported;
+                        } else {
+                            tasks = [...tasks, ...imported];
+                        }
+                        saveTasks();
+                        renderTasks();
+                        updateStats();
+                        showStatus('データをインポートしました', 'success');
+                    } else {
+                        showStatus('無効なファイル形式です', 'error');
+                    }
+                } catch (err) {
+                    showStatus('ファイルの読み込みに失敗しました', 'error');
+                }
+            };
+            reader.readAsText(file);
+            e.target.value = '';
+        }
+
+        async function handleExit() {
+            if (hasUnsavedChanges && fileHandle) {
+                await saveToFile();
+            } else if (hasUnsavedChanges) {
+                exportTasks();
+            }
+            
+            document.getElementById('exitModal').classList.remove('show');
+            showStatus('データを保存しました。アプリを終了できます。', 'success');
+        }
+
+        // 変更を検知
+        window.addEventListener('beforeunload', (e) => {
+            if (hasUnsavedChanges && fileHandle) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        });
+    </script>
+</body>
+</html>

@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>タスク管理アプリ</title>
     <style>
         * {
@@ -14,13 +14,15 @@
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 10px;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
         }
 
         .container {
-            max-width: 1400px;
-            margin: 0 auto;
+            flex: 1;
+            margin: 10px;
             background: white;
             border-radius: 12px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.2);
@@ -94,21 +96,15 @@
             background: rgba(255, 255, 255, 0.2);
             color: white;
             border: none;
-            padding: 0.3rem 0.5rem;
+            padding: 0.2rem 0.35rem;
             border-radius: 8px;
             cursor: pointer;
-            font-size: 0.85rem;
+            font-size: 0.75rem;
             transition: background-color 0.2s;
-            min-width: 32px;
-            min-height: 32px;
         }
 
         .btn-file-control:hover {
             background: rgba(255, 255, 255, 0.3);
-        }
-
-        .btn-file-control:active {
-            transform: scale(0.95);
         }
 
         .header-right {
@@ -118,7 +114,9 @@
         }
 
         .main-content {
+            flex: 1;
             padding: 1rem;
+            overflow: hidden;
             display: flex;
             flex-direction: column;
             gap: 1rem;
@@ -127,7 +125,7 @@
         .status-bar {
             background: #d4edda;
             color: #155724;
-            padding: 0.6rem;
+            padding: 0.4rem;
             border-radius: 4px;
             font-size: 0.85rem;
             display: none;
@@ -207,11 +205,10 @@
 
         input, textarea, select {
             width: 100%;
-            padding: 0.6rem;
+            padding: 0.5rem;
             border: 1px solid #ccc;
             border-radius: 4px;
             font-size: 0.9rem;
-            min-height: 44px;
         }
 
         input:focus, textarea:focus, select:focus {
@@ -222,7 +219,7 @@
 
         textarea {
             resize: vertical;
-            min-height: 60px;
+            height: 50px;
         }
 
         .form-row {
@@ -235,21 +232,15 @@
             background: #4facfe;
             color: white;
             border: none;
-            padding: 0.6rem 1rem;
+            padding: 0.5rem 1rem;
             border-radius: 4px;
             cursor: pointer;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             margin-right: 0.4rem;
-            min-height: 44px;
-            transition: all 0.2s;
         }
 
         .btn:hover {
             background: #0f9afe;
-        }
-
-        .btn:active {
-            transform: scale(0.98);
         }
 
         .btn-danger {
@@ -286,9 +277,8 @@
         }
 
         .btn-small {
-            padding: 0.5rem 0.8rem;
-            font-size: 0.85rem;
-            min-height: 38px;
+            padding: 0.4rem 0.8rem;
+            font-size: 0.8rem;
         }
 
         .export-import {
@@ -298,13 +288,18 @@
         }
 
         .tasks-section {
-            flex-shrink: 0;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            min-height: 0;
         }
 
         .section-title {
             font-size: 1.2rem;
             margin-bottom: 0.6rem;
             color: #333;
+            flex-shrink: 0;
         }
 
         .task-filters {
@@ -312,22 +307,17 @@
             gap: 0.4rem;
             margin-bottom: 0.6rem;
             flex-wrap: wrap;
+            flex-shrink: 0;
         }
 
         .filter-btn {
             background: #e9ecef;
             color: #495057;
             border: 1px solid #ced4da;
-            padding: 0.5rem 0.8rem;
+            padding: 0.4rem 0.8rem;
             border-radius: 4px;
             cursor: pointer;
             font-size: 0.85rem;
-            min-height: 38px;
-            transition: all 0.2s;
-        }
-
-        .filter-btn:active {
-            transform: scale(0.95);
         }
 
         .filter-btn.active {
@@ -336,11 +326,37 @@
             border-color: #4facfe;
         }
 
+        .task-grid-container {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            min-height: 0;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .task-grid-container::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .task-grid-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        .task-grid-container::-webkit-scrollbar-thumb {
+            background: #4facfe;
+            border-radius: 4px;
+        }
+
+        .task-grid-container::-webkit-scrollbar-thumb:hover {
+            background: #0f9afe;
+        }
+
         .task-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             gap: 0.8rem;
-            margin-bottom: 1rem;
+            padding-right: 0.5rem;
         }
 
         .task-card {
@@ -414,18 +430,15 @@
         }
 
         .task-actions .btn {
-            padding: 0.5rem 0.8rem;
-            font-size: 0.8rem;
+            padding: 0.35rem 0.7rem;
+            font-size: 0.75rem;
             margin: 0;
-            flex: 1;
-            min-width: 80px;
         }
 
         .empty-state {
             text-align: center;
             padding: 2rem;
             color: #666;
-            grid-column: 1 / -1;
         }
 
         .empty-state h3 {
@@ -448,7 +461,6 @@
             justify-content: center;
             align-items: center;
             z-index: 1000;
-            padding: 20px;
         }
 
         .modal-overlay.show {
@@ -460,7 +472,7 @@
             padding: 1.5rem;
             border-radius: 8px;
             max-width: 400px;
-            width: 100%;
+            width: 90%;
         }
 
         .modal h3 {
@@ -486,57 +498,19 @@
         }
 
         @media (max-width: 768px) {
-            body {
-                padding: 5px;
-            }
-
-            .container {
-                border-radius: 8px;
-            }
-
-            .header {
-                padding: 0.6rem 1rem;
-            }
-
             .header-layout {
                 grid-template-columns: 1fr;
-                gap: 0.6rem;
-            }
-
-            .header-left {
+                gap: 0.8rem;
                 text-align: center;
             }
 
-            .header-left h1 {
-                font-size: 1.2rem;
-            }
-
+            .header-left h1,
             .header-left p {
-                font-size: 0.75rem;
-            }
-
-            .header-center {
-                order: 3;
-            }
-
-            .file-info-inline {
-                font-size: 0.75rem;
-                padding: 0.3rem 0.6rem;
-                flex-wrap: wrap;
-                justify-content: center;
-            }
-
-            .file-name {
-                max-width: 150px;
+                text-align: center;
             }
 
             .header-right {
                 justify-content: center;
-                order: 2;
-            }
-
-            .main-content {
-                padding: 0.8rem;
             }
 
             .stats {
@@ -549,48 +523,6 @@
 
             .task-grid {
                 grid-template-columns: 1fr;
-            }
-
-            .task-actions {
-                flex-direction: column;
-            }
-
-            .task-actions .btn {
-                width: 100%;
-                min-width: auto;
-            }
-
-            .btn {
-                width: 100%;
-                margin-right: 0;
-                margin-bottom: 0.4rem;
-            }
-
-            .export-import {
-                display: flex;
-                flex-direction: column;
-                gap: 0.4rem;
-            }
-
-            .export-import .btn {
-                margin: 0;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .header-left h1 {
-                font-size: 1rem;
-            }
-
-            .file-info-inline {
-                font-size: 0.7rem;
-            }
-
-            .btn-file-control {
-                font-size: 0.75rem;
-                padding: 0.25rem 0.4rem;
-                min-width: 28px;
-                min-height: 28px;
             }
         }
     </style>
@@ -605,7 +537,7 @@
                 </div>
                 <div class="header-center">
                     <div class="file-info-inline">
-                        <span class="file-label">📁</span>
+                        <span class="file-label">📁 データファイル:</span>
                         <span class="file-name" id="headerFilePath">未設定</span>
                         <div class="file-controls">
                             <button class="btn-file-control" id="headerSelectFile" title="ファイルを選択">📂</button>
@@ -677,9 +609,10 @@
                         <button type="submit" class="btn">タスクを追加</button>
                         <button type="button" class="btn btn-danger" id="cancelBtn" style="display: none;">キャンセル</button>
                         <div class="export-import">
-                            <button type="button" class="btn btn-success btn-small" id="exportBtn">💾 エクスポート</button>
-                            <button type="button" class="btn btn-warning btn-small" id="importBtn">📥 インポート</button>
-                            <input type="file" id="importFile" accept=".json" style="display: none;">
+                            <button type="button" class="btn btn-success btn-small" id="exportBtn">エクスポート</button>
+                            <button type="button" class="btn btn-info btn-small" id="shareBtn" style="display: none;">共有</button>
+                            <button type="button" class="btn btn-warning btn-small" id="importBtn">インポート</button>
+                            <input type="file" id="importFile" accept="application/json,.json,text/json" style="display: none;">
                         </div>
                     </form>
                 </div>
@@ -694,11 +627,13 @@
                     <button class="filter-btn" data-filter="high">高優先度</button>
                     <button class="filter-btn" data-filter="today">今日期限</button>
                 </div>
-                <div class="task-grid" id="taskGrid">
-                    <div class="empty-state">
-                        <div style="font-size: 2.5rem; margin-bottom: 0.8rem;">📝</div>
-                        <h3>まだタスクがありません</h3>
-                        <p>上のフォームから新しいタスクを追加してください</p>
+                <div class="task-grid-container">
+                    <div class="task-grid" id="taskGrid">
+                        <div class="empty-state">
+                            <div style="font-size: 2.5rem; margin-bottom: 0.8rem;">📝</div>
+                            <h3>まだタスクがありません</h3>
+                            <p>上のフォームから新しいタスクを追加してください</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -725,6 +660,9 @@
 
         // File System Access API のサポート確認
         const supportsFileSystemAccess = 'showSaveFilePicker' in window;
+        
+        // Web Share API のサポート確認
+        const supportsWebShare = 'share' in navigator && 'canShare' in navigator;
 
         // 初期化
         document.addEventListener('DOMContentLoaded', () => {
@@ -733,11 +671,16 @@
             updateStats();
             setupEventListeners();
             
+            // Web Share APIのサポート確認
+            if (supportsWebShare) {
+                document.getElementById('shareBtn').style.display = 'inline-block';
+                showStatus('共有機能が利用可能です', 'info');
+            }
+            
             if (supportsFileSystemAccess) {
-                showStatus('デスクトップ版機能が利用可能です', 'info');
+                showStatus('ファイルシステムAPIをサポートしています', 'info');
             } else {
-                showStatus('モバイル版として動作中（エクスポート/インポートをご利用ください）', 'info');
-                document.getElementById('headerFilePath').textContent = 'モバイル版';
+                showStatus('ダウンロード/アップロード方式を使用します', 'info');
             }
         });
 
@@ -745,6 +688,7 @@
             document.getElementById('taskForm').addEventListener('submit', handleTaskSubmit);
             document.getElementById('cancelBtn').addEventListener('click', cancelEdit);
             document.getElementById('exportBtn').addEventListener('click', exportTasks);
+            document.getElementById('shareBtn').addEventListener('click', shareData);
             document.getElementById('importBtn').addEventListener('click', () => document.getElementById('importFile').click());
             document.getElementById('importFile').addEventListener('change', importTasks);
             document.getElementById('exitBtn').addEventListener('click', () => document.getElementById('exitModal').classList.add('show'));
@@ -766,7 +710,7 @@
 
         async function selectFileLocation() {
             if (!supportsFileSystemAccess) {
-                showStatus('モバイルでは「エクスポート」と「インポート」ボタンをご利用ください', 'info');
+                showStatus('お使いのブラウザはファイル選択をサポートしていません', 'error');
                 return;
             }
 
@@ -783,6 +727,7 @@
                 document.getElementById('headerFilePath').textContent = fileHandle.name;
                 showStatus(`ファイル「${fileHandle.name}」を設定しました`, 'success');
                 
+                // 設定後、即座に保存
                 await saveToFile();
             } catch (err) {
                 if (err.name !== 'AbortError') {
@@ -798,6 +743,7 @@
                     await selectFileLocation();
                     return;
                 } else {
+                    // File System Access API非対応の場合は通常のダウンロード
                     exportTasks();
                     return;
                 }
@@ -817,7 +763,7 @@
 
         function clearFileLocation() {
             fileHandle = null;
-            document.getElementById('headerFilePath').textContent = supportsFileSystemAccess ? '未設定' : 'モバイル版';
+            document.getElementById('headerFilePath').textContent = '未設定';
             showStatus('ファイル設定をクリアしました', 'info');
         }
 
@@ -864,9 +810,6 @@
             document.getElementById('formTitle').textContent = 'タスクを編集';
             document.getElementById('cancelBtn').style.display = 'inline-block';
             document.querySelector('button[type="submit"]').textContent = 'タスクを更新';
-
-            // スマホの場合はフォームまでスクロール
-            document.querySelector('.task-form').scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
         function cancelEdit() {
@@ -1001,18 +944,75 @@
         }
 
         function exportTasks() {
-            const dataStr = JSON.stringify(tasks, null, 2);
-            const dataBlob = new Blob([dataStr], { type: 'application/json' });
-            const url = URL.createObjectURL(dataBlob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = 'tasks_' + new Date().toISOString().split('T')[0] + '.json';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
-            showStatus('データをエクスポートしました', 'success');
-            hasUnsavedChanges = false;
+            try {
+                const dataStr = JSON.stringify(tasks, null, 2);
+                const dataBlob = new Blob([dataStr], { type: 'application/json' });
+                
+                // iOS Safari対応のダウンロード処理
+                if (navigator.userAgent.match(/iPhone|iPad|iPod/i)) {
+                    // iOSの場合は別ウィンドウで開く
+                    const url = URL.createObjectURL(dataBlob);
+                    const fileName = 'tasks_' + new Date().toISOString().split('T')[0] + '.json';
+                    
+                    // aタグを使った確実なダウンロード
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = fileName;
+                    link.style.display = 'none';
+                    document.body.appendChild(link);
+                    
+                    // クリックイベントを発火
+                    link.click();
+                    
+                    // クリーンアップ
+                    setTimeout(() => {
+                        document.body.removeChild(link);
+                        URL.revokeObjectURL(url);
+                    }, 100);
+                    
+                    showStatus('ファイルをダウンロードしました。「ファイル」アプリをご確認ください', 'success');
+                } else {
+                    // 通常のブラウザ
+                    const url = URL.createObjectURL(dataBlob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = 'tasks_' + new Date().toISOString().split('T')[0] + '.json';
+                    link.click();
+                    URL.revokeObjectURL(url);
+                    showStatus('データをエクスポートしました', 'success');
+                }
+            } catch (err) {
+                showStatus('エクスポートに失敗しました: ' + err.message, 'error');
+            }
+        }
+
+        async function shareData() {
+            if (!supportsWebShare) {
+                showStatus('お使いのブラウザは共有機能をサポートしていません', 'error');
+                return;
+            }
+
+            try {
+                const dataStr = JSON.stringify(tasks, null, 2);
+                const dataBlob = new Blob([dataStr], { type: 'application/json' });
+                const fileName = 'tasks_' + new Date().toISOString().split('T')[0] + '.json';
+                const file = new File([dataBlob], fileName, { type: 'application/json' });
+
+                if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                    await navigator.share({
+                        files: [file],
+                        title: 'タスクデータ',
+                        text: 'タスク管理アプリのデータ'
+                    });
+                    showStatus('データを共有しました', 'success');
+                } else {
+                    showStatus('ファイル共有がサポートされていません', 'error');
+                }
+            } catch (err) {
+                if (err.name !== 'AbortError') {
+                    showStatus('共有に失敗しました: ' + err.message, 'error');
+                }
+            }
         }
 
         function importTasks(e) {
@@ -1033,13 +1033,15 @@
                         renderTasks();
                         updateStats();
                         showStatus('データをインポートしました', 'success');
-                        hasUnsavedChanges = false;
                     } else {
                         showStatus('無効なファイル形式です', 'error');
                     }
                 } catch (err) {
-                    showStatus('ファイルの読み込みに失敗しました', 'error');
+                    showStatus('ファイルの読み込みに失敗しました: ' + err.message, 'error');
                 }
+            };
+            reader.onerror = () => {
+                showStatus('ファイルの読み込みに失敗しました', 'error');
             };
             reader.readAsText(file);
             e.target.value = '';
@@ -1056,6 +1058,7 @@
             showStatus('データを保存しました。アプリを終了できます。', 'success');
         }
 
+        // 変更を検知
         window.addEventListener('beforeunload', (e) => {
             if (hasUnsavedChanges && fileHandle) {
                 e.preventDefault();
